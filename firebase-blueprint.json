@@ -1,0 +1,26 @@
+{
+  "entities": {
+    "Event": {
+      "title": "Production Event",
+      "description": "An event or task in the production schedule",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "description": "Title of the event" },
+        "requester": { "type": "string", "description": "Name of the person requesting the service" },
+        "type": { "type": "string", "description": "Type of event (Office, Meeting, Event, etc.)" },
+        "date": { "type": "string", "description": "Display date string" },
+        "time": { "type": "string", "description": "Time range string" },
+        "color": { "type": "string", "description": "Tailwind color classes for display" },
+        "timestamp": { "type": "number", "description": "Unix timestamp for sorting" },
+        "createdBy": { "type": "string", "description": "UID of the creator" }
+      },
+      "required": ["title", "requester", "type", "date", "time", "timestamp"]
+    }
+  },
+  "firestore": {
+    "events": {
+      "schema": "Event",
+      "description": "Collection of production schedule events"
+    }
+  }
+}

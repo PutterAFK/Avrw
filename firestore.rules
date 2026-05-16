@@ -1,0 +1,36 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global helpers
+    function isSignedIn() { return request.auth != null; }
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+
+    // Event Validation
+    function isValidEvent(data) {
+      return data.keys().hasAll(['title', 'requester', 'type', 'date', 'time', 'timestamp', 'color']) &&
+             data.title is string && data.title.size() <= 200 &&
+             data.requester is string && data.requester.size() <= 100 &&
+             data.type is string && data.type.size() <= 50 &&
+             data.date is string && data.date.size() <= 100 &&
+             data.time is string && data.time.size() <= 100 &&
+             data.color is string && data.color.size() <= 100 &&
+             (data.timestamp is number || data.timestamp == request.time);
+    }
+
+    match /events/{eventId} {
+      allow read: if true; // Publicly readable for the schedule board
+      allow create: if isSignedIn() && isValidEvent(incoming());
+      allow update: if isSignedIn() && isValidEvent(incoming()) && (
+        incoming().diff(existing()).affectedKeys().hasOnly(['title', 'requester', 'type', 'date', 'time', 'timestamp', 'color'])
+      );
+      allow delete: if isSignedIn();
+    }
+  }
+}
